@@ -1,0 +1,43 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== 打包 / 构建产物 =====
+dist/
+build/
+*.manifest
+*.spec
+Xiaobai/
+
+# ===== Rust (xiaobai_core) =====
+target/
+
+# ===== 模型权重（运行时下载，禁止入库）=====
+models/weights/
+**/*.onnx
+**/*.bin
+**/*.safetensors
+**/*.ckpt
+**/*.pt
+**/*.pth
+**/*.gguf
+
+# ===== 本地配置（可能含机器相关路径）=====
+config.local.yaml
+*.local.yaml
+
+# ===== 编辑器 / 系统 =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

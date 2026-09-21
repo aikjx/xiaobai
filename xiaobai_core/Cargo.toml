@@ -1,0 +1,57 @@
+[package]
+name = "xiaobai_core"
+version = "0.1.0"
+edition = "2021"
+description = "Xiaobai voice assistant Rust core: DSP, config, intent routing, model download, operators with RBAC"
+license = "Apache-2.0"
+
+[lib]
+name = "xiaobai_core"
+crate-type = ["cdylib", "rlib"]
+
+[workspace]
+# Independent workspace to avoid inheriting parent workspace package settings
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module", "abi3-py39"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+regex = "1"
+once_cell = "1"
+thiserror = "1"
+anyhow = "1"
+dirs = "5"
+sha2 = "0.10"
+hex = "0.4"
+futures = "0.3"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["stream", "rustls-tls"], default-features = false }
+tokio-util = { version = "0.7", features = ["io"] }
+num-traits = "0.2"
+approx = "0.5"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_System_Threading",
+    "Win32_Media_Audio",
+    "Win32_System_Com",
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Console",
+    "Win32_System_DataExchange",
+    "Win32_System_Memory",
+] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+core-graphics = "0.24"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = false

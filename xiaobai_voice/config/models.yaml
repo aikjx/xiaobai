@@ -1,0 +1,86 @@
+# 模型清单。更新版本号即可触发下载中心检测到旧缓存并提示升级。
+# 对于 sha256，发布前请运行：Get-FileHash <file> -Algorithm SHA256
+version: 1
+
+models:
+  - id: asr-paraformer-int8
+    name: Paraformer-zh INT8 (sherpa-onnx)
+    size_mb: 138
+    license: Apache-2.0
+    category: asr
+    engine: sherpa_paraformer
+    default: true
+    urls:
+      # 双源兜底：ModelScope（国内快）/ HuggingFace（国际通用）
+      - https://www.modelscope.cn/api/v1/models/AI-ModelScope/sherpa-onnx-paraformer-zh-int8/repo?Revision=master&FilePath=sherpa-onnx-paraformer-zh-int8.tar.gz
+      - https://huggingface.co/csukuangfj/sherpa-onnx-paraformer-zh-int8/resolve/main/sherpa-onnx-paraformer-zh-int8.tar.gz
+    sha256: TBD_PLEASE_PIN_BEFORE_RELEASE
+    archive_format: tgz
+    subdir: asr-paraformer-int8
+    entry:
+      tokens: tokens.txt
+      encoder: model.int8.onnx
+      decoder: decoder.onnx          # 可选
+      feats: ""
+
+  - id: asr-sensevoice-small
+    name: SenseVoice small 多语种 ASR
+    size_mb: 224
+    license: MIT
+    category: asr
+    engine: sensevoice
+    default: false
+    optional: true
+    urls:
+      - https://www.modelscope.cn/api/v1/models/AI-ModelScope/SherpaOnnx_SenseVoiceSmall/repo?Revision=master&FilePath=sherpa-onnx-sensevoice-small.tar.gz
+      - https://huggingface.co/csukuangfj/sherpa-onnx-sensevoice-small/resolve/main/sherpa-onnx-sensevoice-small.tar.gz
+    sha256: TBD_PLEASE_PIN_BEFORE_RELEASE
+    archive_format: tgz
+    subdir: asr-sensevoice-small
+    entry:
+      tokens: tokens.txt
+      model: model.int8.onnx
+
+  - id: tts-fish-s2-pro
+    name: Fish-Speech S2 Pro 权重（Research · 非商用免费）
+    size_mb: 3850
+    license: Research
+    category: tts
+    engine: fish_s2
+    default: true
+    license_requires_tier: [auto, research]
+    urls:
+      - https://github.com/fishaudio/fish-speech/releases/download/v1.5/fish-speech-1.5-s2-pro.pt
+      - https://hf-mirror.com/fishaudio/fish-speech-1.5-s2/resolve/main/fish-speech-1.5-s2-pro.pt
+    sha256: TBD_PLEASE_PIN_BEFORE_RELEASE
+    archive_format: file
+    subdir: tts-fish-s2-pro
+    entry:
+      ckpt: fish-speech-1.5-s2-pro.pt
+
+  - id: tts-cosyvoice2-0.5b
+    name: CosyVoice2 0.5B (Apache2 · 信创回退)
+    size_mb: 3600
+    license: Apache-2.0
+    category: tts
+    engine: cosyvoice2
+    default: true
+    fallback: true
+    # 推荐方式：modelscope SDK snapshot_download（断点续传 + 分片并发）
+    #   from modelscope import snapshot_download
+    #   snapshot_download('iic/CosyVoice2-0.5B', local_dir='projects/xiaobai_voice/models/tts-cosyvoice2-0.5b')
+    # 或 CLI：
+    #   modelscope download --model iic/CosyVoice2-0.5B \
+    #       --local_dir projects/xiaobai_voice/models/tts-cosyvoice2-0.5b
+    # 或 Git LFS：
+    #   git clone https://www.modelscope.cn/iic/CosyVoice2-0.5B.git projects/xiaobai_voice/models/tts-cosyvoice2-0.5b
+    download_method: modelscope_snapshot
+    modelscope_model_id: iic/CosyVoice2-0.5B
+    # URLs：下载器会先尝试 modelscope snapshot（HTTP 200），再尝试 ModelScope HF tarball 兜底
+    urls:
+      - https://www.modelscope.cn/iic/CosyVoice2-0.5B
+      - https://huggingface.co/FunAudioLLM/CosyVoice2-0.5B
+    sha256: TBD_PLEASE_PIN_BEFORE_RELEASE
+    archive_format: dir
+    subdir: tts-cosyvoice2-0.5b
+    entry: {}

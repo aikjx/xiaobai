@@ -1,0 +1,68 @@
+# xiaobai 默认配置（跨平台）。用户实际运行配置在 %APPDATA%/mox/xiaobai/config.yaml
+# 运行时会以本文件为基础，做 deep-merge 覆盖。
+voice:
+  port: 30010
+  host: 127.0.0.1
+  strategy: local_first          # local_first / cloud_only / cloud_fallback
+  license_tier: auto             # auto / research / apache2
+
+  asr:
+    engine: auto                 # auto / sherpa_paraformer / sensevoice
+    hotwords: []                 # [ {word: "璇玑", score: 3.0}, ... ]
+    vad_threshold_ms: 800        # ≥ 800 ms 静音 → VAD 自动断句
+    sample_rate: 16000
+    channels: 1
+
+  tts:
+    default_engine: cosyvoice2
+    engines:
+      cosyvoice2:
+        enabled: true
+        license: Apache-2.0
+        # CosyVoice2 0.5B 内置音色匹配："中文女" / "中文男" 是 SFT 权重 ckpt 默认注册
+        # 的 prompt_id（写死为 "中文女" 更贴近豆包柔和女声质感）。
+        # 如果你的权重包里有不同注册名（如 "Default" / "voice_0" / "女"），可在此覆盖。
+        preferred_spk_ids: ["中文女", "女", "voice_0", "Default"]
+        # 指令风格：豆包级拟人推荐 "warm_daily"（温暖日常）。可选项：
+        #   warm_daily / gentle_soft / anchor_premium / professional_calm / cute_lively
+        instruction_style: warm_daily
+        # 重采样质量：linear 线性插值（比 nearest 顺滑）。若已安装 librosa 可写 "kaiser_best"。
+        resample_quality: linear
+        # 动态范围压缩/软限幅：避免峰值削波失真 + 小音量智能提升（豆包响度一致性）。
+        limiter: true
+        loudness_target_dbfs: -18.0
+      fish_s2_pro:
+        enabled: false
+        license: Research
+        note: "默认禁用。若需启用请设置环境变量 XIAOBAI_ACCEPT_RESEARCH_LICENSE=1"
+    default_voice: xiaobai
+    clone_reference: null        # voice_clips/<sha1>.wav 的 id
+    emotion: neutral             # neutral | happy | sad | serious
+    speed: 1.03                  # 0.8 ~ 1.4（豆包级日常语速）
+    sample_rate: 22050           # CosyVoice2 原生 22.05k（减少一次重采样失真）
+    auto_read_assistant: true    # 助手返回后自动朗读
+
+  temp_cleanup_minutes: 10       # 临时音频自动清理周期
+
+ui:
+  float_ball_size: 68            # 42 / 68 / 110
+  float_ball_pos: [right, 120]   # [ edge in {left,right}, offset_y px ]
+  auto_start: false              # 开机自启（需 S3 任务生效）
+  shortcuts:
+    toggle_record: Alt+X
+    read_clipboard: Alt+S
+    quit: Alt+Q
+  ai_dialog_url: "http://localhost:3020/#/ai"
+  use_qt_webview: true           # 双击用 QWebEngineView 打开；否则默认浏览器
+
+logging:
+  level: INFO                    # DEBUG/INFO/WARNING/ERROR
+  path: null                     # null → 默认用户目录 /logs
+  rotation: "10 MB"
+  keep_days: 14
+
+cloud:
+  # 默认禁用云端 API；需要时请在这里填入 key，并把 strategy 改 cloud_fallback
+  asr_endpoint: ""
+  tts_endpoint: ""
+  api_key: ""

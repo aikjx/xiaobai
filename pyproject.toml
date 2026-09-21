@@ -1,0 +1,63 @@
+[project]
+name = "xiaobai-voice"
+version = "0.1.0"
+description = "Xiaobai: offline Chinese voice service (Paraformer-zh + sherpa-onnx) and desktop assistant."
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+license = {text = "Apache-2.0"}
+authors = [{name = "Mox Team"}]
+dependencies = [
+  "numpy>=1.24,<2.0",
+  "sounddevice>=0.4.6",
+  "soundfile>=0.12.1",
+  "httpx>=0.27.0",
+  "tqdm>=4.65",
+  "PyYAML>=6.0",
+  "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+asr = [
+  "sherpa-onnx>=1.10.30",
+]
+tts = [
+  # Fish-S2-Pro 仅在 license_tier=research/auto 且用户手动安装时生效
+  # 用户执行: pip install fish-speech[s2pro]
+  # CosyVoice2 作为 Apache2 回退默认包含
+  "cosyvoice>=0.2.0; platform_system != 'Darwin'",
+]
+service = [
+  "fastapi>=0.110.0",
+  "uvicorn[standard]>=0.29.0",
+  "websockets>=12.0",
+  "python-multipart>=0.0.9",
+]
+desktop = [
+  "PySide6>=6.6",
+  "pynput>=1.7.6",
+]
+build = [
+  "pyinstaller>=6.0",
+]
+dev = [
+  "pytest>=8.0",
+  "pytest-asyncio>=0.23",
+]
+all = [
+  "xiaobai-voice[asr,service,desktop,dev]",
+  # tts (CosyVoice2 默认) 需要用户显式 opt-in，因为 torch 体积大
+]
+
+[project.scripts]
+xiaobai = "xiaobai_voice.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["xiaobai_voice*"]
+
+[tool.setuptools.package-data]
+xiaobai_voice.config = ["*.yaml", "*.json"]
+xiaobai_voice.models = ["README*"]
