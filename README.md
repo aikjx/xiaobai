@@ -94,8 +94,11 @@ Start-Process dist\Xiaobai\Xiaobai.exe -ArgumentList "--selftest-full"
 
 ## 三、配置位置
 
-Windows：`%APPDATA%\mox\xiaobai\config.yaml`
-macOS：`~/Library/Application Support/mox/xiaobai/config.yaml`
-Linux：`$XDG_CONFIG_HOME/mox/xiaobai/config.yaml`
+Windows：`%APPDATA%\xiaobai\config.yaml`
+macOS：`~/Library/Application Support/xiaobai/config.yaml`
+Linux：`$XDG_CONFIG_HOME/xiaobai/config.yaml`
+
+> 兼容说明：旧版本曾使用 `.../mox/xiaobai/config.yaml`。若该旧配置存在且新位置尚无配置，
+> 程序会**自动沿用旧路径**，因此升级不会丢配置。
 
 启动后可用合规 φ Chip 对话框直接切换 `license_tier=apache2`（默认 auto）。

@@ -127,7 +127,7 @@ class EngineLifecycle:
         if self.tts:
             try:
                 t0 = time.time()
-                opts = TTSOptions(text="你好，璇玑。", voice="xiaobai", emotion="neutral", speed=1.0, sample_rate=16000)
+                opts = TTSOptions(text="你好，小白。", voice="xiaobai", emotion="neutral", speed=1.0, sample_rate=16000)
                 _ = self.tts.synthesize_full(opts)
                 duration = round((time.time() - t0) * 1000, 1)
                 self._append_smoke(dict(ts=time.time(), phase="tts_prewarm", code="OK", engine=self.tts.name, duration_ms=duration))
@@ -160,7 +160,7 @@ def _temp_root() -> str:
 def _temp_cleanup_loop() -> None:  # pragma: no cover
     import shutil
 
-    temp = Path(os.environ.get("MOX_TEMP") or os.path.join(_temp_root(), "mox_voice"))
+    temp = Path(os.environ.get("XIAOBAI_TEMP") or os.environ.get("MOX_TEMP") or os.path.join(_temp_root(), "xiaobai_voice"))
     temp.mkdir(parents=True, exist_ok=True)
     while True:
         time.sleep(60.0)
@@ -183,7 +183,7 @@ def _temp_cleanup_loop() -> None:  # pragma: no cover
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: D401
     global _lifecycle, _loader, _registry, _downloader
-    cfg_path_env = os.environ.get("MOX_VOICE_CONFIG") or None
+    cfg_path_env = os.environ.get("XIAOBAI_VOICE_CONFIG") or os.environ.get("MOX_VOICE_CONFIG") or None
     _loader = ConfigLoader(Path(cfg_path_env) if cfg_path_env else None, watch=True)
     _registry = ModelRegistry()
     _downloader = ModelDownloader(_registry)
@@ -538,7 +538,8 @@ def _bind_routes(app: FastAPI, prefix: str) -> None:
         if len(data) < 2048:
             raise HTTPException(400, "参考音频太短。请上传 3~5 秒 wav。")
         sha = hashlib.sha1(data).hexdigest()
-        clip_dir = Path(os.path.expanduser("~/.mox/models/voice/voice_clips"))
+        # 写入新品牌目录；旧目录中的既有片段在 fish_s2 解析时仍会被检索到（向后兼容）
+        clip_dir = Path(os.path.expanduser("~/.xiaobai/models/voice/voice_clips"))
         clip_dir.mkdir(parents=True, exist_ok=True)
         dst = clip_dir / f"{sha}.wav"
         if not dst.is_file():

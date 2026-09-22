@@ -385,7 +385,7 @@ class CosyVoice2Backend(TTSBackend):
                 code=ErrorCode.MISSING_MODEL,
                 message=(
                     "CosyVoice2 权重目录缺失。请下载 tts-cosyvoice2-0.5b 放入 "
-                    f"`~/.mox/models/voice/` 或 `projects/xiaobai_voice/models/`。{missing_text}"
+                    f"`~/.xiaobai/models/voice/` 或 仓库 `models/`。{missing_text}"
                 ),
                 cause=exc,
             ) from exc
@@ -430,7 +430,8 @@ class CosyVoice2Backend(TTSBackend):
             candidates.append(os.path.join(p, "tts-cosyvoice2-0.5b"))
         if getattr(sys, "frozen", False):
             candidates.append(os.path.join(os.path.dirname(sys.executable), "models", "tts-cosyvoice2-0.5b"))
-        candidates.append(os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "tts-cosyvoice2-0.5b"))
+        candidates.append(os.path.join(os.path.expanduser("~"), ".xiaobai", "models", "voice", "tts-cosyvoice2-0.5b"))
+        candidates.append(os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "tts-cosyvoice2-0.5b"))  # 旧路径，保留兼容
         candidates.append(
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "models", "tts-cosyvoice2-0.5b"))
         )

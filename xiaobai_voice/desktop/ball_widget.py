@@ -139,7 +139,7 @@ class BallWidget(QtWidgets.QWidget):
                 if code == "PERMISSION_DENIED":
                     self.show_toast(f"🚫 权限不足：{msg}", ms=3600)
                 elif code == "BRIDGE_DISCONNECTED":
-                    self.show_toast(f"🔌 mox 桥离线：{msg}", ms=3600)
+                    self.show_toast(f"🔌 云端桥离线：{msg}", ms=3600)
                 elif code == "INTENT_UNKNOWN":
                     self.show_toast(f"❓ 未匹配动作：{msg}", ms=3200)
                 else:

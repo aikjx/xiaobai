@@ -30,12 +30,12 @@ def _open_diagnostic_stderr():
     s = system()
     if s == "Windows":
         base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-        root = Path(base) / "mox" / "xiaobai" / "logs"
+        root = Path(base) / "xiaobai" / "logs"
     elif s == "Darwin":
-        root = Path.home() / "Library" / "Logs" / "mox" / "xiaobai"
+        root = Path.home() / "Library" / "Logs" / "xiaobai"
     else:
         xdg = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
-        root = Path(xdg) / "mox" / "xiaobai" / "logs"
+        root = Path(xdg) / "xiaobai" / "logs"
     root.mkdir(parents=True, exist_ok=True)
     p = root / f"windowed-{time.strftime('%Y%m%d-%H%M%S')}.log"
     fp = open(p, "a", encoding="utf-8", buffering=1)
@@ -96,7 +96,7 @@ def _versioned_sitepkgs_ok(p: Path) -> bool:
             return True
     except Exception:
         pass
-    # 没有明确版本标记的通用路径（比如 ~/.mox/models/voice、自建 venv），不允许混用：
+    # 没有明确版本标记的通用路径（比如 ~/.xiaobai/models/voice、自建 venv），不允许混用：
     # 仅当父目录包含 PythonXX 子目录匹配当前版本，或显式 `.venv/pyvenv.cfg` 指定版本时才放行。
     parent = p.parent
     while parent != parent.parent:
@@ -253,11 +253,15 @@ def _inject_dll_dirs() -> None:
 
 
 def _inject_env() -> None:
-    home_voice = str(Path.home() / ".mox" / "models" / "voice")
+    new_voice = Path.home() / ".xiaobai" / "models" / "voice"
+    legacy_voice = Path.home() / ".mox" / "models" / "voice"
+    # 老用户模型仍在旧目录时优先沿用旧目录，避免找不到已下载的模型
+    home_voice = str(legacy_voice if (legacy_voice.is_dir() and not new_voice.is_dir()) else new_voice)
     for k, v in {
         "FISH_SPEECH_CKPT_DIR": home_voice,
         "COSYVOICE_CKPT_DIR": home_voice,
-        "MOX_VOICE_PORT": "30010",
+        "XIAOBAI_VOICE_PORT": "30010",
+        "MOX_VOICE_PORT": "30010",  # 旧名保留兼容
     }.items():
         os.environ.setdefault(k, v)
 
@@ -376,12 +380,12 @@ def main(argv=None) -> int:
 
     p = s.add_parser("serve")
     p.add_argument("--host", default="127.0.0.1")
-    p.add_argument("--port", type=int, default=int(os.environ.get("MOX_VOICE_PORT") or 30010))
+    p.add_argument("--port", type=int, default=int(os.environ.get("XIAOBAI_VOICE_PORT") or os.environ.get("MOX_VOICE_PORT") or 30010))
     p.add_argument("--log-level", default="info", choices=["trace", "debug", "info", "warning", "error"])
 
     p = s.add_parser("desktop")
     p.add_argument("--skip-serve", action="store_true")
-    p.add_argument("--port", type=int, default=int(os.environ.get("MOX_VOICE_PORT") or 30010))
+    p.add_argument("--port", type=int, default=int(os.environ.get("XIAOBAI_VOICE_PORT") or os.environ.get("MOX_VOICE_PORT") or 30010))
 
     p = s.add_parser("download")
     p.add_argument("--model-id", default=None)

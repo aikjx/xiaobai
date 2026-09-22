@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.loader = loader
         self.port = int(port or 30010)
         self.default_url = default_url
-        self.setWindowTitle("小白 xiaobai · 璇玑 AI 助手")
+        self.setWindowTitle("小白 · 每个人的 AI 伙伴与助手")
         self.resize(1200, 780)
 
         central = QtWidgets.QWidget(self)

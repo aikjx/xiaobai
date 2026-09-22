@@ -8,25 +8,45 @@ use serde_yaml::Value;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
-/// Resolve the platform-specific config directory.
-pub fn platform_config_path() -> PathBuf {
+/// 品牌目录名：新 = "xiaobai"；旧 = "mox/xiaobai"（仅向后兼容）。
+const APP_DIR: &str = "xiaobai";
+const LEGACY_APP_DIR: [&str; 2] = ["mox", "xiaobai"];
+
+fn config_path_in(dirnames: &[&str]) -> PathBuf {
     if cfg!(windows) {
         let appdata = std::env::var("APPDATA")
             .unwrap_or_else(|_| format!("{}\\AppData\\Roaming", dirs::home_dir().unwrap_or_default().display()));
-        PathBuf::from(appdata).join("mox").join("xiaobai").join("config.yaml")
+        let mut p = PathBuf::from(appdata);
+        for d in dirnames {
+            p = p.join(d);
+        }
+        p.join("config.yaml")
     } else if cfg!(target_os = "macos") {
-        dirs::home_dir()
-            .unwrap_or_default()
-            .join("Library")
-            .join("Application Support")
-            .join("mox")
-            .join("xiaobai")
-            .join("config.yaml")
+        let mut p = dirs::home_dir().unwrap_or_default();
+        p = p.join("Library").join("Application Support");
+        for d in dirnames {
+            p = p.join(d);
+        }
+        p.join("config.yaml")
     } else {
         let xdg = std::env::var("XDG_CONFIG_HOME")
             .unwrap_or_else(|_| format!("{}/.config", dirs::home_dir().unwrap_or_default().display()));
-        PathBuf::from(xdg).join("mox").join("xiaobai").join("config.yaml")
+        let mut p = PathBuf::from(xdg);
+        for d in dirnames {
+            p = p.join(d);
+        }
+        p.join("config.yaml")
     }
+}
+
+/// Resolve the platform-specific config directory (current brand: xiaobai).
+pub fn platform_config_path() -> PathBuf {
+    config_path_in(&[APP_DIR])
+}
+
+/// Legacy (mox/xiaobai) config path — read-only compatibility for existing installs.
+pub fn legacy_platform_config_path() -> PathBuf {
+    config_path_in(&LEGACY_APP_DIR)
 }
 
 /// Resolve the platform-specific log directory.
@@ -34,26 +54,26 @@ pub fn default_log_path() -> PathBuf {
     if cfg!(windows) {
         let appdata = std::env::var("APPDATA")
             .unwrap_or_else(|_| format!("{}\\AppData\\Roaming", dirs::home_dir().unwrap_or_default().display()));
-        PathBuf::from(appdata).join("mox").join("xiaobai").join("logs")
+        PathBuf::from(appdata).join(APP_DIR).join("logs")
     } else if cfg!(target_os = "macos") {
         dirs::home_dir()
             .unwrap_or_default()
             .join("Library")
             .join("Logs")
-            .join("mox")
-            .join("xiaobai")
+            .join(APP_DIR)
     } else {
         let xdg = std::env::var("XDG_STATE_HOME")
             .unwrap_or_else(|_| format!("{}/.local/state", dirs::home_dir().unwrap_or_default().display()));
-        PathBuf::from(xdg).join("mox").join("xiaobai").join("logs")
+        PathBuf::from(xdg).join(APP_DIR).join("logs")
     }
 }
 
 /// Default model search directories (exe-level > user dir > repo models).
 pub fn default_voice_models_dirs() -> Vec<PathBuf> {
     let mut dirs = Vec::new();
-    // User directory
+    // User directory: new brand dir first, legacy (~/.mox) kept for compatibility.
     if let Some(home) = dirs::home_dir() {
+        dirs.push(home.join(format!(".{}", APP_DIR)).join("models").join("voice"));
         dirs.push(home.join(".mox").join("models").join("voice"));
     }
     dirs
@@ -90,7 +110,16 @@ pub struct ConfigLoader {
 impl ConfigLoader {
     /// Create a new config loader. If `user_path` is None, uses platform default.
     pub fn new(user_path: Option<PathBuf>, default_path: PathBuf) -> Result<Self> {
-        let user_path = user_path.unwrap_or_else(platform_config_path);
+        let user_path = user_path.unwrap_or_else(|| {
+            let new_path = platform_config_path();
+            let legacy = legacy_platform_config_path();
+            // 老用户已有旧配置且尚未迁移 → 继续用旧路径，避免配置“凭空消失”
+            if legacy.is_file() && !new_path.is_file() {
+                legacy
+            } else {
+                new_path
+            }
+        });
         if let Some(parent) = user_path.parent() {
             std::fs::create_dir_all(parent).map_err(|e| {
                 XiaobaiError::new(ErrorCode::Runtime, format!("Failed to create config dir: {e}"))

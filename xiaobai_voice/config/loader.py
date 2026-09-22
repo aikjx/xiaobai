@@ -16,37 +16,56 @@ import yaml
 log = logging.getLogger("xiaobai.config")
 
 
-def _platform_config_path() -> Path:
+# ---------------------------------------------------------------------------
+# 品牌目录名：新 = "xiaobai"；旧 = "mox/xiaobai"。
+# 旧名仅作为「向后兼容」保留：老用户已有的配置 / 模型不会被丢弃。
+# ---------------------------------------------------------------------------
+_APP_DIR = "xiaobai"
+_LEGACY_APP_DIR = ("mox", "xiaobai")
+
+
+def _config_path_in(dirnames: tuple[str, ...]) -> Path:
     system = platform.system()
     if system == "Windows":
         base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-        return Path(base) / "mox" / "xiaobai" / "config.yaml"
+        return Path(base).joinpath(*dirnames) / "config.yaml"
     if system == "Darwin":
-        return Path.home() / "Library" / "Application Support" / "mox" / "xiaobai" / "config.yaml"
+        return Path.home().joinpath("Library", "Application Support", *dirnames) / "config.yaml"
     xdg = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
-    return Path(xdg) / "mox" / "xiaobai" / "config.yaml"
+    return Path(xdg).joinpath(*dirnames) / "config.yaml"
+
+
+def _platform_config_path() -> Path:
+    """当前品牌（xiaobai）的配置路径。"""
+    return _config_path_in((_APP_DIR,))
+
+
+def _legacy_platform_config_path() -> Path:
+    """旧品牌（mox/xiaobai）配置路径，仅用于向后兼容读取。"""
+    return _config_path_in(_LEGACY_APP_DIR)
 
 
 def default_log_path() -> Path:
     system = platform.system()
     if system == "Windows":
         base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
-        root = Path(base) / "mox" / "xiaobai" / "logs"
+        root = Path(base) / _APP_DIR / "logs"
     elif system == "Darwin":
-        root = Path.home() / "Library" / "Logs" / "mox" / "xiaobai"
+        root = Path.home() / "Library" / "Logs" / _APP_DIR
     else:
         xdg = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
-        root = Path(xdg) / "mox" / "xiaobai" / "logs"
+        root = Path(xdg) / _APP_DIR / "logs"
     root.mkdir(parents=True, exist_ok=True)
     return root
 
 
 def _default_voice_models_dirs() -> list[Path]:
-    """模型解析路径顺序：exe同级 > 用户目录 > 仓库 models/"""
+    """模型解析路径顺序：exe同级 > 用户目录(新) > 用户目录(旧) > 仓库 models/"""
     dirs: list[Path] = []
     if getattr(sys, "frozen", False):
         dirs.append(Path(sys.executable).resolve().parent / "models")
-    dirs.append(Path.home() / ".mox" / "models" / "voice")
+    dirs.append(Path.home() / f".{_APP_DIR}" / "models" / "voice")
+    dirs.append(Path.home() / ".mox" / "models" / "voice")  # 旧路径，保留兼容
     dirs.append(Path(__file__).resolve().parent.parent.parent / "models")
     return [d for d in dirs if d is not None]
 
@@ -76,7 +95,13 @@ class ConfigLoader:
         watch: bool = False,
         on_change=None,
     ) -> None:
-        self.user_path = Path(user_path) if user_path else _platform_config_path()
+        if user_path:
+            self.user_path = Path(user_path)
+        else:
+            new_path = _platform_config_path()
+            legacy_path = _legacy_platform_config_path()
+            # 老用户已有旧配置且尚未迁移 → 继续用旧路径，避免配置“凭空消失”
+            self.user_path = legacy_path if (legacy_path.is_file() and not new_path.is_file()) else new_path
         self.user_path.parent.mkdir(parents=True, exist_ok=True)
         self.default_path = self._resolve_default_path(self.DEFAULT_FILENAME)
         self._data: dict = {}

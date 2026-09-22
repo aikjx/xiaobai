@@ -1,4 +1,4 @@
-# xiaobai 默认配置（跨平台）。用户实际运行配置在 %APPDATA%/mox/xiaobai/config.yaml
+# xiaobai 默认配置（跨平台）。用户实际运行配置在 %APPDATA%/xiaobai/config.yaml（旧路径 mox/xiaobai 兼容保留）
 # 运行时会以本文件为基础，做 deep-merge 覆盖。
 voice:
   port: 30010
@@ -8,7 +8,7 @@ voice:
 
   asr:
     engine: auto                 # auto / sherpa_paraformer / sensevoice
-    hotwords: []                 # [ {word: "璇玑", score: 3.0}, ... ]
+    hotwords: []                 # [ {word: "小白", score: 3.0}, ... ]
     vad_threshold_ms: 800        # ≥ 800 ms 静音 → VAD 自动断句
     sample_rate: 16000
     channels: 1

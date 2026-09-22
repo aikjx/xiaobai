@@ -75,8 +75,11 @@ class FishS2Backend(TTSBackend):
         if getattr(sys, "frozen", False):
             candidates.append(os.path.join(os.path.dirname(sys.executable), "models", "tts-fish-s2-pro", file_name))
         candidates.append(
-            os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "tts-fish-s2-pro", file_name)
+            os.path.join(os.path.expanduser("~"), ".xiaobai", "models", "voice", "tts-fish-s2-pro", file_name)
         )
+        candidates.append(
+            os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "tts-fish-s2-pro", file_name)
+        )  # 旧路径，保留兼容
         candidates.append(
             os.path.abspath(
                 os.path.join(os.path.dirname(__file__), "..", "..", "models", "tts-fish-s2-pro", file_name)
@@ -214,7 +217,8 @@ def _resolve_clip_path(clip_id: str) -> str:
     if getattr(__import__("sys"), "frozen", False):
         base_dirs.append(os.path.join(os.path.dirname(__import__("sys").executable), "models", "voice_clips"))
     base_dirs += [
-        os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "voice_clips"),
+        os.path.join(os.path.expanduser("~"), ".xiaobai", "models", "voice", "voice_clips"),
+        os.path.join(os.path.expanduser("~"), ".mox", "models", "voice", "voice_clips"),  # 旧路径，保留兼容
         os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "models", "voice_clips")),
     ]
     for d in base_dirs:

@@ -1,11 +1,11 @@
 [project]
 name = "xiaobai-voice"
 version = "0.1.0"
-description = "Xiaobai: offline Chinese voice service (Paraformer-zh + sherpa-onnx) and desktop assistant."
+description = "小白（Xiaobai）· 每个人的 AI 伙伴与助手 —— 离线中文语音 AI 助手（ASR Paraformer-zh/sherpa-onnx + TTS）+ 桌面浮窗"
 readme = "README.md"
 requires-python = ">=3.10,<3.12"
 license = {text = "Apache-2.0"}
-authors = [{name = "Mox Team"}]
+authors = [{name = "aikjx"}]
 dependencies = [
   "numpy>=1.24,<2.0",
   "sounddevice>=0.4.6",
