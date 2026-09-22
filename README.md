@@ -1,4 +1,10 @@
-# xiaobai_voice — 璇玑系统离线语音 & 桌面小白（xiaobai）AI 助手
+# 小白（Xiaobai） — 每个人的 AI 伙伴与助手
+
+> **离线**运行 · 数据不出本机 · 能陪你，也能帮你做事。
+
+「小白」是一个**离线中文语音 AI 伙伴与助手**：支持语音对话与意图理解，并能用算子操作本机应用 / 文件 / 音量等。
+语音能力（ASR / TTS）由本仓库的 `xiaobai_voice` 模块提供，性能关键路径由 Rust 核心 `xiaobai_core` 加速。
+因为是**本地离线**的，你的语音与数据不会上传到任何云端——这正是它能成为「每个人的 AI 伙伴」的前提。
 
 > ASR：**Paraformer-zh + sherpa-onnx**（Apache2 / 离线 CPU 最优）
 > TTS：**Fish-Speech-S2-Pro**（Research，默认启用 iff 本地权重完整且 license_tier != apache2）
